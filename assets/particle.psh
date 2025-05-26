@@ -13,12 +13,18 @@ struct PSOutput
 void main(in  PSInput  PSIn,
           out PSOutput PSOut)
 {
-    float r = length(PSIn.uv.xy - float2(0.5, 0.5)) * 2.0;
-    if(r > 1.0)
+    float r = length(PSIn.uv.xy - float2(0.5, 0.5)) * 1.5;
+    if(r > 0.8)
         discard;
 
     float intensity = sqrt(saturate(1.0));
-    float3 Color = lerp(float3(0.0, 0.0, 0.0), float3(1, 1, 1), PSIn.Temp);
+    float3 Color;
+if (PSIn.Temp < 0.5)
+    Color = float3(1.0, 0.0, 0.0); 
+else
+    Color = float3(1.0, 1.0, 1.0); 
+
+
 #if CONVERT_PS_OUTPUT_TO_GAMMA
     // Use fast approximation for gamma correction.
     Color = pow(Color, float3(8.0 / 15.2, 8.0 / 13.2, 8.0 / 11.2));

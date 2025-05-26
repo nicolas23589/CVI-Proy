@@ -55,7 +55,7 @@ private:
     void CreateParticleBuffers();
     void CreateConsantBuffer();
 
-    int m_NumParticles    = 2000;
+    int m_NumParticles    = 20;
     int m_ThreadGroupSize = 256;
 
     RefCntAutoPtr<IPipelineState>         m_pRenderParticlePSO;

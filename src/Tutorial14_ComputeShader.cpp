@@ -10,6 +10,10 @@
 
 namespace Diligent
 {
+char m_TextField1[128] = "";
+char m_TextField2[128] = "";
+char m_TextField3[128] = "";
+
 
 SampleBase* CreateSample()
 {
@@ -308,18 +312,74 @@ void Tutorial14_ComputeShader::CreateConsantBuffer()
 
 void Tutorial14_ComputeShader::UpdateUI()
 {
+    static char m_TextField1[128] = "";
+    static char m_TextField2[128] = "";
+    static char m_TextField3[128] = "";
+
+    // Para detectar cambios en el texto
+    static std::string prev1 = "", prev2 = "", prev3 = "";
+
     ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
     if (ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        if (ImGui::InputInt("Num Particles", &m_NumParticles, 100, 1000, ImGuiInputTextFlags_EnterReturnsTrue))
+        ImGui::SliderFloat("Simulation Speed", &m_fSimulationSpeed, 0.0f, 1.0f);
+
+        bool changed = false;
+
+        if (ImGui::InputText("Reactivo 1", m_TextField1, IM_ARRAYSIZE(m_TextField1)))
+        {
+            std::string curr(m_TextField1);
+            if (curr != prev1)
+            {
+                changed = true;
+                prev1   = curr;
+            }
+        }
+
+        if (ImGui::InputText("Reactivo 2", m_TextField2, IM_ARRAYSIZE(m_TextField2)))
+        {
+            std::string curr(m_TextField2);
+            if (curr != prev2)
+            {
+                changed = true;
+                prev2   = curr;
+            }
+        }
+
+        if (ImGui::InputText("Producto", m_TextField3, IM_ARRAYSIZE(m_TextField3)))
+        {
+            std::string curr(m_TextField3);
+            if (curr != prev3)
+            {
+                changed = true;
+                prev3   = curr;
+            }
+        }
+
+        if (changed)
+        {
+            int totalLength = strlen(m_TextField1) + strlen(m_TextField2) + strlen(m_TextField3);
+            m_NumParticles += totalLength;
+            m_NumParticles = std::min(std::max(m_NumParticles, 10), 100000);
+            CreateParticleBuffers();
+        }
+
+        if (ImGui::InputInt("Cantidad reactivo 1", &m_NumParticles, 100, 1000, ImGuiInputTextFlags_EnterReturnsTrue))
         {
             m_NumParticles = std::min(std::max(m_NumParticles, 10), 100000);
             CreateParticleBuffers();
         }
-        ImGui::SliderFloat("Simulation Speed", &m_fSimulationSpeed, 0.0f, 1.0f);
+
+        if (ImGui::InputInt("Cantidad reactivo 2", &m_NumParticles, 100, 1000, ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            m_NumParticles = std::min(std::max(m_NumParticles, 10), 100000);
+            CreateParticleBuffers();
+        }
     }
     ImGui::End();
 }
+
+
 
 void Tutorial14_ComputeShader::ModifyEngineInitInfo(const ModifyEngineInitInfoAttribs& Attribs)
 {
