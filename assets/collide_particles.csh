@@ -26,6 +26,7 @@ StructuredBuffer<HeadData> g_ParticleListHead;
 
 StructuredBuffer<int> g_ParticleLists;
 
+
 // https://en.wikipedia.org/wiki/Elastic_collision
 void CollideParticles(inout ParticleAttribs P0, in ParticleAttribs P1)
 {
@@ -72,7 +73,7 @@ void main(uint3 Gid  : SV_GroupID,
 
     int iParticleIdx = int(uiGlobalThreadIdx);
     ParticleAttribs Particle = g_Particles[iParticleIdx];
-    
+
     int2 i2GridPos = GetGridLocation(Particle.f2Pos, g_Constants.i2ParticleGridSize).xy;
     int GridWidth  = g_Constants.i2ParticleGridSize.x;
     int GridHeight = g_Constants.i2ParticleGridSize.y;
@@ -82,7 +83,6 @@ void main(uint3 Gid  : SV_GroupID,
     Particle.iNumCollisions = 0;
 #else
     Particle.f2NewSpeed     = Particle.f2Speed;
-    // Only update speed when there is single collision with another particle.
     if (Particle.iNumCollisions == 1)
     {
 #endif
@@ -107,12 +107,85 @@ void main(uint3 Gid  : SV_GroupID,
     }
     else if (Particle.iNumCollisions > 1)
     {
-        // If there are multiple collisions, reverse the particle move direction to
-        // avoid particle crowding.
         Particle.f2NewSpeed = -Particle.f2Speed;
     }
 #else
     ClampParticlePosition(Particle.f2NewPos, Particle.f2Speed, Particle.fSize, g_Constants.f2Scale);
+
+    /*
+    
+    // ------------------------------------------------------------------------------------------------------------- AlquilacionRadicalica ---
+
+    if (Particle.iNumCollisions > 3)
+    {
+        Particle.f4Color = float4(0.1, 0.8, 0.2, 1.0); 
+        Particle.fSize += 0.02;
+        Particle.fTemperature = min(Particle.fTemperature + 0.2, 1.0);
+    }
+
+    // ----------------------------------------------------------------------------------------------------- IsomerizacionTermica ---
+
+    if (Particle.fTemperature > 0.8)
+    {
+        Particle.f2NewSpeed.y *= -1.0;
+        Particle.fTemperature *= 0.5;
+    }
+
+    // ------------------------------------------------------------------------------------------ Cicloaromatizacion ---
+
+    if (Particle.iNumCollisions == 6)
+    {
+        Particle.f4Color = float4(0.4, 0.0, 0.6, 1.0); 
+        Particle.f2NewSpeed *= 0.3;
+    }
+
+    // ----------------------------------------------------------------------------------  DescarboxilacionEspontanea ---
+
+    if ((iParticleIdx + int(g_Constants.fTime * 1000)) % 97 == 0)
+    {
+        Particle.f2NewSpeed = float2(-Particle.f2Speed.y, Particle.f2Speed.x);
+        Particle.fTemperature = 1.0;
+    }
+
+    // -----------------------------------------------------------------------------------------  EnlacePuenteHidrogeno ---
+
+    if (Particle.fTemperature < 0.2)
+    {
+        float2 attraction = float2(0, 0);
+        int nearbyCount = 0;
+
+        for (int y = max(i2GridPos.y - 1, 0); y <= min(i2GridPos.y + 1, GridHeight-1); ++y)
+        {
+            for (int x = max(i2GridPos.x - 1, 0); x <= min(i2GridPos.x + 1, GridWidth-1); ++x)
+            {
+                int AnotherParticleIdx = g_ParticleListHead[x + y * GridWidth].FirstParticleIdx;
+                while (AnotherParticleIdx >= 0)
+                {
+                    if (iParticleIdx != AnotherParticleIdx)
+                    {
+                        ParticleAttribs Another = g_Particles[AnotherParticleIdx];
+                        if (Another.fTemperature < 0.2)
+                        {
+                            float2 dir = normalize(Another.f2Pos - Particle.f2Pos);
+                            attraction += dir;
+                            nearbyCount++;
+                        }
+                    }
+                    AnotherParticleIdx = g_ParticleLists[AnotherParticleIdx];
+                }
+            }
+        }
+
+        if (nearbyCount > 0)
+        {
+            Particle.f2NewSpeed += 0.01 * normalize(attraction / nearbyCount);
+        }
+    }
+
+
+
+
+    */
 #endif
 
     g_Particles[iParticleIdx] = Particle;
