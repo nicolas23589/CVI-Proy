@@ -19,15 +19,62 @@ void main(in  PSInput  PSIn,
 
     float intensity = sqrt(saturate(1.0));
     float3 Color;
-if (PSIn.Temp < 0.5)
-    Color = float3(1.0, 0.0, 0.0); 
-else
-    Color = float3(1.0, 1.0, 1.0); 
-
+    if (PSIn.Temp < 0.5)
+        Color = float3(1.0, 0.0, 0.0); 
+    else
+        Color = float3(1.0, 1.0, 1.0); 
 
 #if CONVERT_PS_OUTPUT_TO_GAMMA
     // Use fast approximation for gamma correction.
     Color = pow(Color, float3(8.0 / 15.2, 8.0 / 13.2, 8.0 / 11.2));
 #endif
     PSOut.Color = float4(Color, sqrt(intensity));
+
+    /*
+
+
+    // ---  ColoresPorAtomo ----------------------------------------------------------------------------------------
+
+    float atomType = floor(PSIn.uv.x * 10.0); 
+    if (atomType == 0.0) Color = float3(1.0, 1.0, 1.0); // Hidrógeno
+
+    else if (atomType == 1.0) Color = float3(0.0, 0.0, 0.0); // Carbono
+    
+    else if (atomType == 2.0) Color = float3(0.0, 0.0, 1.0); // Nitrógeno
+    
+    else if (atomType == 3.0) Color = float3(1.0, 0.0, 0.0); // Oxígeno
+    
+    else if (atomType == 4.0) Color = float3(1.0, 1.0, 0.0); // Azufre
+    
+    else if (atomType == 5.0) Color = float3(0.6, 0.3, 1.0); // Fósforo
+    
+    else Color = float3(0.5, 0.5, 0.5); // Otros
+
+    // ------------------------------------------------------------- BrilloPorTemperatura ---
+
+    Color *= saturate(PSIn.Temp + 0.2);
+
+    // ---------------------------------------- Fragmento FiltroUVSimulado (oscurecer bordes)--------------------------------------------- ---
+
+    float vignette = smoothstep(0.8, 0.4, r);
+    Color *= vignette;
+
+    // -------------------------------------------------------------------------------- InestabilidadCuantic (ruido)a ---
+
+    float noise = sin(dot(PSIn.uv, float2(12.9898,78.233))) * 43758.5453;
+    Color += frac(noise) * 0.05;
+
+    // --- Resplandor por temperatura: IndicadorDeFusion ----------------------------------------------------------------------
+
+    if (PSIn.Temp > 0.9)
+        Color = lerp(Color, float3(0.3, 0.6, 1.0), 0.5);
+
+
+
+
+
+
+    */
+
+    PSOut.Color = float4(Color, 1.0);
 }
